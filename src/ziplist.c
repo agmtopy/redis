@@ -267,8 +267,7 @@
         ZIPLIST_LENGTH(zl) = intrev16ifbe(intrev16ifbe(ZIPLIST_LENGTH(zl))+incr); \
 }
 
-/* Don't let ziplists grow over 1GB in any case, don't wanna risk overflow in
- * zlbytes*/
+/* 判断ziplists的长度是否超过1GB*/
 #define ZIPLIST_MAX_SAFETY_SIZE (1<<30)
 int ziplistSafeToAdd(unsigned char* zl, size_t add) {
     size_t len = zl? ziplistBlobLen(zl): 0;
@@ -278,25 +277,16 @@ int ziplistSafeToAdd(unsigned char* zl, size_t add) {
 }
 
 
-/* We use this function to receive information about a ziplist entry.
- * Note that this is not how the data is actually encoded, is just what we
- * get filled by a function in order to operate more easily. */
+/* 我们使用这个函数来接收有关 ziplist 条目的信息。
+   请注意，这不是数据的实际编码方式，这是我们
+  被一个函数填充以便更容易操作。 */
 typedef struct zlentry {
-    unsigned int prevrawlensize; /* Bytes used to encode the previous entry len*/
-    unsigned int prevrawlen;     /* Previous entry len. */
-    unsigned int lensize;        /* Bytes used to encode this entry type/len.
-                                    For example strings have a 1, 2 or 5 bytes
-                                    header. Integers always use a single byte.*/
-    unsigned int len;            /* Bytes used to represent the actual entry.
-                                    For strings this is just the string length
-                                    while for integers it is 1, 2, 3, 4, 8 or
-                                    0 (for 4 bit immediate) depending on the
-                                    number range. */
+    unsigned int prevrawlensize; /* 对prevrawlen编码后的字节大小*/
+    unsigned int prevrawlen;     /* 上一个节点的长度 */
+    unsigned int lensize;        /* 对len编码后的长度*/
+    unsigned int len;            /* 当前节点的长度 */
     unsigned int headersize;     /* prevrawlensize + lensize. */
-    unsigned char encoding;      /* Set to ZIP_STR_* or ZIP_INT_* depending on
-                                    the entry encoding. However for 4 bits
-                                    immediate integers this can assume a range
-                                    of values and must be range-checked. */
+    unsigned char encoding;      /* 当前节点所使用的编码类型:ZIP_STR_* or ZIP_INT */
     unsigned char *p;            /* Pointer to the very start of the entry, that
                                     is, this points to prev-entry-len field. */
 } zlentry;
@@ -708,13 +698,19 @@ static inline void zipAssertValidEntry(unsigned char* zl, size_t zlbytes, unsign
     assert(zipEntrySafe(zl, zlbytes, p, &e, 1));
 }
 
-/* Create a new empty ziplist. */
+/* 创建一个空白的ziplist */
 unsigned char *ziplistNew(void) {
+    //ZIPLIST_HEADER_SIZE = (sizeof(uint32_t)*2+sizeof(uint16_t))  + (sizeof(uint8_t))
+    //8个字节 + 2个字节 + 1个字节
     unsigned int bytes = ZIPLIST_HEADER_SIZE+ZIPLIST_END_SIZE;
+    //分配内存,返回列表指针
     unsigned char *zl = zmalloc(bytes);
+    //尝试将大端数据转换成小端数据
     ZIPLIST_BYTES(zl) = intrev32ifbe(bytes);
     ZIPLIST_TAIL_OFFSET(zl) = intrev32ifbe(ZIPLIST_HEADER_SIZE);
+    //初始化列表长度
     ZIPLIST_LENGTH(zl) = 0;
+    //设置列表尾部字符为hex_ff
     zl[bytes-1] = ZIP_END;
     return zl;
 }

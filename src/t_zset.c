@@ -1375,12 +1375,16 @@ int zsetAdd(robj *zobj, double score, sds ele, int in_flags, int *out_flags, dou
         } else if (!xx) {
             /* check if the element is too large or the list
              * becomes too long *before* executing zzlInsert. */
+            //如果当前列表长度大于128个时进行转化
             if (zzlLength(zobj->ptr)+1 > server.zset_max_ziplist_entries ||
+                //如果当前列表格式大于64个时进行转化
                 sdslen(ele) > server.zset_max_ziplist_value ||
-                !ziplistSafeToAdd(zobj->ptr, sdslen(ele)))
-            {
+                //如果当前列表大小大于1G时进行转化
+                !ziplistSafeToAdd(zobj->ptr, sdslen(ele))){
+                //转换为skip结构
                 zsetConvert(zobj,OBJ_ENCODING_SKIPLIST);
             } else {
+                //继续添加数据
                 zobj->ptr = zzlInsert(zobj->ptr,ele,score);
                 if (newscore) *newscore = score;
                 *out_flags |= ZADD_OUT_ADDED;
