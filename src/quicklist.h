@@ -35,14 +35,17 @@
 
 /* Node, quicklist, and Iterator are the only data structures used currently. */
 
-/* quicklistNode is a 32 byte struct describing a ziplist for a quicklist.
- * We use bit fields keep the quicklistNode at 32 bytes.
- * count: 16 bits, max 65536 (max zl bytes is 65k, so max count actually < 32k).
- * encoding: 2 bits, RAW=1, LZF=2.
- * container: 2 bits, NONE=1, ZIPLIST=2.
- * recompress: 1 bit, bool, true if node is temporary decompressed for usage.
- * attempted_compress: 1 bit, boolean, used for verifying during testing.
- * extra: 10 bits, free for future use; pads out the remainder of 32 bits */
+/**
+ * quicklistNode 是一个 32 字节的结构，用于描述一个快速列表的ziplist。
+ * 我们使用sz(位域)将 quicklistNode 保持在 32 字节。
+ * count: 16位，最大 65536（最大 zl 字节为 65k，因此最大计数实际上 < 32k）。
+ * encoding: 2位，RAW=1，LZF=2。
+ * container: 2 位，NONE=1，ZIPLIST=2。
+ * recompress: 1 位，布尔值，如果节点临时解压缩以供使用，则为 true。
+ * attempted_compress: 1 位，布尔值，用于测试期间的验证。
+ * extra: 10 位，免费供以后使用； 填充剩余的 32 位
+ */
+
 typedef struct quicklistNode {
     struct quicklistNode *prev;
     struct quicklistNode *next;
@@ -94,22 +97,24 @@ typedef struct quicklistBookmark {
 #   error unknown arch bits count
 #endif
 
-/* quicklist is a 40 byte struct (on 64-bit systems) describing a quicklist.
- * 'count' is the number of total entries.
- * 'len' is the number of quicklist nodes.
- * 'compress' is: 0 if compression disabled, otherwise it's the number
- *                of quicklistNodes to leave uncompressed at ends of quicklist.
- * 'fill' is the user-requested (or default) fill factor.
- * 'bookmakrs are an optional feature that is used by realloc this struct,
- *      so that they don't consume memory when not used. */
+/**
+ * quickList结构体
+ * 大小为40字节
+ */
 typedef struct quicklist {
+    //首尾节点
     quicklistNode *head;
     quicklistNode *tail;
-    unsigned long count;        /* total count of all entries in all ziplists */
-    unsigned long len;          /* number of quicklistNodes */
-    int fill : QL_FILL_BITS;              /* fill factor for individual nodes */
-    unsigned int compress : QL_COMP_BITS; /* depth of end nodes not to compress;0=off */
+    //总条数
+    unsigned long count;
+    //节点数量
+    unsigned long len;
+    //单个节点的填充因子
+    int fill : QL_FILL_BITS;
+    //不同节点的深度
+    unsigned int compress : QL_COMP_BITS;
     unsigned int bookmark_count: QL_BM_BITS;
+    //书签列表(用于快速查找节点使用)
     quicklistBookmark bookmarks[];
 } quicklist;
 

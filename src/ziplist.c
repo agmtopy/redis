@@ -287,8 +287,7 @@ typedef struct zlentry {
     unsigned int len;            /* 当前节点的长度 */
     unsigned int headersize;     /* prevrawlensize + lensize. */
     unsigned char encoding;      /* 当前节点所使用的编码类型:ZIP_STR_* or ZIP_INT */
-    unsigned char *p;            /* Pointer to the very start of the entry, that
-                                    is, this points to prev-entry-len field. */
+    unsigned char *p;            /* 指向列表第一个元素的指针 */
 } zlentry;
 
 #define ZIPLIST_ENTRY_ZERO(zle) { \

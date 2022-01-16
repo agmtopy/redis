@@ -68,12 +68,18 @@ typedef struct dictType {
     int (*expandAllowed)(size_t moreMem, double usedRatio);
 } dictType;
 
-/* This is our hash table structure. Every dictionary has two of this as we
- * implement incremental rehashing, for the old to the new table. */
+/*
+ * hash结构体
+ * 会同时使用两个hash结构体,以便实现增量扩容
+ */
 typedef struct dictht {
+    //指针数组,用于存储键值对
     dictEntry **table;
+    //table数组的大小
     unsigned long size;
+    //掩码(size-1)
     unsigned long sizemask;
+    //已存储的元素数量
     unsigned long used;
 } dictht;
 
