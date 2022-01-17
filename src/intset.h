@@ -32,9 +32,15 @@
 #define __INTSET_H
 #include <stdint.h>
 
+/**
+ * 整数集合结构体
+ */
 typedef struct intset {
+    //编码格式
     uint32_t encoding;
+    //数组长度
     uint32_t length;
+    //元素数组
     int8_t contents[];
 } intset;
 
