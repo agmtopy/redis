@@ -1434,13 +1434,14 @@ int rdbSaveBackground(char *filename, rdbSaveInfo *rsi) {
         /* Child */
         redisSetProcTitle("redis-rdb-bgsave");
         redisSetCpuAffinity(server.bgsave_cpulist);
-        retval = rdbSave(filename,rsi);
+        serverLog(LL_WARNING,"RDB文件为: %s",filename);
+        retval = rdbSave(filename,rsi);//生成rdb文件
         if (retval == C_OK) {
             sendChildCowInfo(CHILD_INFO_TYPE_RDB_COW_SIZE, "RDB");
         }
         exitFromChild((retval == C_OK) ? 0 : 1);
     } else {
-        /* Parent */
+        /* 父进程处理 */
         if (childpid == -1) {
             server.lastbgsave_status = C_ERR;
             serverLog(LL_WARNING,"Can't save in background: fork: %s",
@@ -2987,8 +2988,9 @@ void saveCommand(client *c) {
 void bgsaveCommand(client *c) {
     int schedule = 0;
 
-    /* The SCHEDULE option changes the behavior of BGSAVE when an AOF rewrite
-     * is in progress. Instead of returning an error a BGSAVE gets scheduled. */
+    /*
+     * 当正在进行AOF重写时,schedule会被设置成为执行
+    */
     if (c->argc > 1) {
         if (c->argc == 2 && !strcasecmp(c->argv[1]->ptr,"schedule")) {
             schedule = 1;

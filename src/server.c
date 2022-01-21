@@ -1117,8 +1117,8 @@ struct redisCommand redisCommandTable[] = {
  * function of Redis may be called from other threads. */
 void nolocks_localtime(struct tm *tmp, time_t t, time_t tz, int dst);
 
-/* Low level logging. To use only for very big messages, otherwise
- * serverLog() is to prefer. */
+/* 较低级别的日志记录器,仅用于大量日志时,否则优先使用 serverLog()
+ */
 void serverLogRaw(int level, const char *msg) {
     const int syslogLevelMap[] = { LOG_DEBUG, LOG_INFO, LOG_NOTICE, LOG_WARNING };
     const char *c = ".-*#";
@@ -1168,11 +1168,11 @@ void serverLogRaw(int level, const char *msg) {
 void _serverLog(int level, const char *fmt, ...) {
     va_list ap;
     char msg[LOG_MAX_LEN];
-
+    //日志输出
     va_start(ap, fmt);
-    vsnprintf(msg, sizeof(msg), fmt, ap);
+    vsnprintf(msg, sizeof(msg), fmt, ap);//控制台输出bgsave开始信息
     va_end(ap);
-
+    //记录原始数据
     serverLogRaw(level,msg);
 }
 

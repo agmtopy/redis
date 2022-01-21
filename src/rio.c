@@ -56,8 +56,8 @@
 #include "server.h"
 
 /* ------------------------- Buffer I/O implementation ----------------------- */
-
 /* Returns 1 or 0 for success/failure. */
+//rio即redis I/O ,ha~ha~
 static size_t rioBufferWrite(rio *r, const void *buf, size_t len) {
     r->io.buffer.ptr = sdscatlen(r->io.buffer.ptr,(char*)buf,len);
     r->io.buffer.pos += len;
